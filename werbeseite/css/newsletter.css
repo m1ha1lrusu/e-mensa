@@ -79,3 +79,21 @@
     margin-right: 10px; /* Abstand zum Label */
 }
 
+.success {
+    color: green;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.error ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+

@@ -1,0 +1,35 @@
+1. Mangelnde Datenintegrität
+Problem: Beim Speichern in Dateien gibt es keine Mechanismen, um sicherzustellen, dass die Daten konsistent sind. Ein unerwarteter Absturz der Anwendung könnte beispielsweise eine Datei beschädigen oder unvollständig speichern.
+Lösung mit einer Datenbank: Datenbanken bieten Transaktionsmanagement und Konsistenzmechanismen (ACID-Prinzip), die sicherstellen, dass Daten in einem validen Zustand bleiben, selbst bei Fehlern.
+
+2. Fehlende Parallelität
+Problem: Bei mehreren Benutzern oder Prozessen, die gleichzeitig auf dieselbe Datei zugreifen, kann es zu Race Conditions und Datenverlusten kommen. Dateien sind nicht für gleichzeitige Schreib-/Lesevorgänge optimiert.
+Lösung mit einer Datenbank: Datenbanken handhaben gleichzeitige Zugriffe mit Sperren (Locks) oder Transaktionssteuerung und verhindern Konflikte.
+
+3. Schwierige Datenabfragen und -filterung
+Problem: Komplexe Abfragen, wie das Filtern nach bestimmten Kriterien oder das Kombinieren von Daten aus mehreren Dateien, erfordern das manuelle Parsen und Verarbeiten der Dateien. Dies ist ineffizient und fehleranfällig.
+Lösung mit einer Datenbank: Datenbanken bieten eine leistungsstarke Abfragesprache (SQL), die optimierte Abfragen und Filter ermöglicht.
+
+4. Performance-Probleme
+Problem: Dateien sind bei zunehmender Datenmenge ineffizient, da jede Abfrage das vollständige Lesen der Datei erfordern kann. Dies skaliert schlecht bei großen Datenmengen.
+Lösung mit einer Datenbank: Datenbanken nutzen Indizes, um Abfragen zu beschleunigen, und sind für große Datenmengen optimiert.
+
+5. Mangelnde Sicherheit
+Problem: Dateien können leicht kopiert oder verändert werden, besonders wenn die Anwendung keine speziellen Zugriffsbeschränkungen implementiert.
+Lösung mit einer Datenbank: Datenbanken bieten eingebaute Mechanismen zur Benutzer- und Rechteverwaltung (z. B. Rollen und Berechtigungen).
+
+6. Schwierige Datenstrukturierung
+Problem: Daten in Dateien sind oft unstrukturiert oder benötigen benutzerdefinierte Formate (z. B. CSV oder JSON). Änderungen in der Datenstruktur erfordern aufwendige Anpassungen aller betroffenen Dateien und Programme.
+Lösung mit einer Datenbank: Datenbanken speichern Daten in klar definierten Tabellen und Beziehungen, die sich leicht anpassen lassen.
+
+7. Fehlende Skalierbarkeit
+Problem: Mit zunehmender Datenmenge wird die Verwaltung von Dateien immer schwieriger. Es gibt keinen Mechanismus, um die Daten effizient auf mehrere Speicherorte zu verteilen.
+Lösung mit einer Datenbank: Datenbanksysteme bieten Skalierungslösungen wie Partitionierung, Replikation oder Clustering.
+
+8. Keine Wiederverwendbarkeit und Standards
+Problem: Dateien sind spezifisch für die Anwendung und erfordern individuelle Anpassungen bei jeder neuen Funktion oder Schnittstelle.
+Lösung mit einer Datenbank: Datenbanken bieten Standardprotokolle (z. B. ODBC, JDBC) und können nahtlos mit anderen Systemen integriert werden.
+
+9. Schwierige Sicherung und Wiederherstellung
+Problem: Backups und Wiederherstellungen von Daten in Dateien erfordern komplexe und oft manuelle Prozesse.
+Lösung mit einer Datenbank: Datenbanksysteme bieten automatische Backup- und Wiederherstellungsmechanismen.
