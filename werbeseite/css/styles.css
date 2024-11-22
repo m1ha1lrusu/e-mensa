@@ -6,6 +6,7 @@
 
 body {
     font-family: "Inconsolata", sans-serif;
+    font-size: 17px;
     background-color: var(--background-light);
     color: var(--text-primary);
     overflow-x: hidden; /* Verhindert horizontales Scrollen */
