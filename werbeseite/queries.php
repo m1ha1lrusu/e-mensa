@@ -57,3 +57,21 @@ function getGerichtByName($link, $name)
     return $gericht;
 }
 
+function speichereNewsletterAnmeldung($link, $name, $email): void
+{
+    $stmt = $link->prepare("INSERT INTO emensawerbeseite.newsletter_anmeldungen (name, email, datum) VALUES (?, ?, ?)");
+    if (!$stmt) {
+        die("Fehler beim Vorbereiten des Statements: " . $link->error);
+    }
+
+    $datum = date('Y-m-d H:i:s');
+    $stmt->bind_param("sss", $name, $email, $datum);
+
+    if (!$stmt->execute()) {
+        die("Fehler beim Ausführen des Statements: " . $stmt->error);
+    }
+
+    $stmt->close();
+}
+
+

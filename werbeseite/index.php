@@ -5,9 +5,10 @@
  * Soufiane, Zouak, 3638505
  */
 
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
+//// Fehlerberichterstattung aktivieren
+ini_set('display_errors', 1); // Fehler im Browser anzeigen
+//ini_set('display_startup_errors', 1); // Startfehler anzeigen
+//error_reporting(E_ALL); // Alle Fehler und Warnungen anzeigen
 
 session_start();
 
@@ -22,78 +23,41 @@ global $visitCount;
 global $newsletterCount;
 global $mealCount;
 
+$currentDate = date('Y-m-d');
+$userIP = $_SERVER['REMOTE_ADDR'];
+
+// Prüfen, ob die IP-Adresse bereits heute gespeichert wurde
+$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.besucher WHERE ip_address = ? AND visit_date = ?");
+$stmt->bind_param("ss", $userIP, $currentDate);
+$stmt->execute();
+$stmt->bind_result($visitExists);
+$stmt->fetch();
+$stmt->close();
+
+// Wenn die IP noch nicht vorhanden ist, speichern
+if (!$visitExists) {
+    $stmt = $link->prepare("INSERT INTO emensawerbeseite.besucher (ip_address, visit_date) VALUES (?, ?)");
+    $stmt->bind_param("ss", $userIP, $currentDate);
+    $stmt->execute();
+    $stmt->close();
+}
+
+// Anzahl der Besucher
+$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.besucher");
+$stmt->execute();
+$stmt->bind_result($visitCount);
+$stmt->fetch();
+$stmt->close();
+
+// Newsletter-Anmeldungen zählen
+$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.newsletter_anmeldungen");
+$stmt->execute();
+$stmt->bind_result($newsletterCount);
+$stmt->fetch();
+$stmt->close();
+
+// Gerichte laden und sortieren
 $gerichte = getGerichteMitAllergenen($link);
-
-$tagesmenue = [];
-foreach ($tagesmenue as $gericht) {
-    echo htmlspecialchars($gericht['image']) . '<br>';
-}
-
-// Verarbeitung
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = trim($_POST['name'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $consent = isset($_POST['datenschutz']);
-
-    $errors = [];
-
-    // Validierung
-    if (empty($name)) {
-        $errors[] = 'Der Name darf nicht leer sein.';
-    }
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Die E-Mail-Adresse ist nicht korrekt formatiert.';
-    }
-    if (preg_match('/@wegwerfmail\.(de|com)$/i', $email) || preg_match('/@trashmail\./i', $email)) {
-        $errors[] = 'Wegwerf-E-Mail-Adressen sind nicht erlaubt.';
-    }
-    if (!$consent) {
-        $errors[] = 'Der Datenschutzbestimmung muss zugestimmt werden.';
-    }
-
-    // IP-Zählung
-    $ipFile = 'ip_log.txt';
-    $userIP = $_SERVER['REMOTE_ADDR'];
-    $currentDate = date('Y-m-d');
-    $fileContents = file($ipFile, FILE_IGNORE_NEW_LINES);
-    $ipFound = false;
-
-    foreach ($fileContents as $entry) {
-        list($ip, $date) = explode('|', $entry);
-        if ($ip === $userIP && $date === $currentDate) {
-            $ipFound = true;
-            break;
-        }
-    }
-
-    if (!$ipFound) {
-        // IP und Datum speichern
-        $newEntry = $userIP . '|' . $currentDate . PHP_EOL;
-
-        $fileHandle = fopen($ipFile, 'a');
-        if ($fileHandle) {
-            fwrite($fileHandle, $newEntry); // Daten anhängen
-        }
-        fclose($fileHandle);
-    }
-}
-
-if (empty($errors)) {
-    $dataFile = 'newsletter_anmeldedaten.txt';
-    $entry = "Name: $name, E-Mail: $email, Datum: " . date('Y-m-d H:i:s') . PHP_EOL;
-
-    $fileHandle = fopen($dataFile, 'a');
-    if ($fileHandle) {
-        fwrite($fileHandle, $entry);
-        fclose($fileHandle);
-    }
-} else {
-    echo "<p>Fehler:</p><ul><li>" . implode('</li><li>', $errors) . "</li></ul>";
-}
-
-// Statistiken berechnen
-$visitCount = count(file('ip_log.txt', FILE_IGNORE_NEW_LINES));
-$newsletterCount = count(file('newsletter_anmeldedaten.txt', FILE_IGNORE_NEW_LINES));
 $mealCount = count($gerichte);
 
 /* Sortierung */
@@ -118,6 +82,67 @@ if (isset($_GET['reset'])) {
     unset($_SESSION['random_gerichte']); // Lösche die gespeicherten Gerichte
     header("Location: " . strtok($_SERVER['REQUEST_URI'], '?')); // Seite ohne GET-Parameter neu laden
     exit();
+}
+
+$message = ""; // Variable für Fehlermeldungen oder Erfolgsmeldungen
+
+// Newsletter-Verarbeitung
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $consent = isset($_POST['datenschutz']);
+
+    $errors = [];
+
+    // Validierung
+    if (empty($name)) {
+        $errors[] = 'Der Name darf nicht leer sein.';
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Die E-Mail-Adresse ist nicht korrekt formatiert.';
+    }
+    if (preg_match('/@wegwerfmail\.(de|com)$/i', $email) || preg_match('/@trashmail\./i', $email)) {
+        $errors[] = 'Wegwerf-E-Mail-Adressen sind nicht erlaubt.';
+    }
+    if (!$consent) {
+        $errors[] = 'Der Datenschutzbestimmung muss zugestimmt werden.';
+    }
+
+    // Überprüfen, ob E-Mail bereits existiert
+    $stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.newsletter_anmeldungen WHERE email = ?");
+    if (!$stmt) {
+        die("Fehler beim Vorbereiten des Statements: " . $link->error);
+    }
+
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->bind_result($emailExists);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($emailExists > 0) {
+        $errors[] = 'Diese E-Mail-Adresse ist bereits registriert.';
+    }
+
+    // Fehlerfrei? In Datenbank einfügen
+    if (!empty($errors)) {
+        $message = "<div class='error'><ul><li>" . implode('</li><li>', $errors) . "</li></ul></div>";
+    } else {
+        $stmt = $link->prepare("INSERT INTO emensawerbeseite.newsletter_anmeldungen (name, email, datum) VALUES (?, ?, ?)");
+        if (!$stmt) {
+            die("Fehler beim Vorbereiten des Statements: " . $link->error);
+        }
+
+        $datum = date('Y-m-d H:i:s');
+        $stmt->bind_param("sss", $name, $email, $datum);
+
+        if ($stmt->execute()) {
+            $message = "<div class='success'>Danke für Ihre Anmeldung!</div>";
+        } else {
+            $message = "<div class='error'>Fehler beim Speichern der Anmeldung: " . $stmt->error . "</div>";
+        }
+        $stmt->close();
+    }
 }
 
 ?>
@@ -293,6 +318,7 @@ if (isset($_GET['reset'])) {
             </p>
 
             <button type="submit" class="newsletter-btn">Zum Newsletter anmelden</button>
+            <?= $message ?? '' ?>
         </form>
     </section>
 </main>
