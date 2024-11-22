@@ -5,7 +5,7 @@
  * Soufiane, Zouak, 3638505
  */
 
-//// Fehlerberichterstattung aktivieren
+// Fehlerberichterstattung aktivieren
 ini_set('display_errors', 1); // Fehler im Browser anzeigen
 //ini_set('display_startup_errors', 1); // Startfehler anzeigen
 //error_reporting(E_ALL); // Alle Fehler und Warnungen anzeigen
