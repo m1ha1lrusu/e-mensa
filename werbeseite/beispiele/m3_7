@@ -1,0 +1,25 @@
+ALTER TABLE gericht
+ADD CONSTRAINT pk_gericht PRIMARY KEY (id),
+ADD CONSTRAINT unique_gericht_name UNIQUE (name),
+ADD CONSTRAINT check_preisintern_positive CHECK (preisintern >= 0),
+ADD CONSTRAINT check_preisextern_positive CHECK (preisextern >= 0),
+ADD CONSTRAINT check_preisintern_smaller_preisextern CHECK (preisintern <= preisextern);
+
+ALTER TABLE allergen
+ADD CONSTRAINT pk_allergen PRIMARY KEY (code),
+ADD CONSTRAINT unique_allergen_code UNIQUE (code);
+
+ALTER TABLE kategorie
+ADD CONSTRAINT pk_kategorie PRIMARY KEY (id),
+ADD CONSTRAINT unique_kategorie_name UNIQUE (name),
+ADD CONSTRAINT fk_kategorie_eltern FOREIGN KEY (eltern_id) REFERENCES kategorie(id) ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE gericht_hat_allergen
+ADD CONSTRAINT unique_gericht_allergen UNIQUE (code, gericht_id),
+ADD CONSTRAINT fk_gericht_hat_allergen_gericht FOREIGN KEY (gericht_id) REFERENCES gericht(id) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT fk_gericht_hat_allergen_allergen FOREIGN KEY (code) REFERENCES allergen(code) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE gericht_hat_kategorie
+ADD CONSTRAINT unique_gericht_kategorie UNIQUE (kategorie_id, gericht_id),
+ADD CONSTRAINT fk_gericht_hat_kategorie_gericht FOREIGN KEY (gericht_id) REFERENCES gericht(id) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT fk_gericht_hat_kategorie_kategorie FOREIGN KEY (kategorie_id) REFERENCES kategorie(id) ON DELETE CASCADE ON UPDATE CASCADE;

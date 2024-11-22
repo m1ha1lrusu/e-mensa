@@ -1,0 +1,68 @@
+.marquee-container {
+    overflow: hidden; /* Versteckt überflüssigen Inhalt */
+    max-width: 80%; /* Breite des sichtbaren Bereichs */
+    margin: 0 auto; /* Zentriert den Container */
+    background: #fff; /* Hintergrundfarbe */
+    padding: 20px 0; /* Vertikaler Abstand */
+}
+
+.marquee-content {
+    display: flex; /* Ordnet die Elemente horizontal an */
+    gap: 20px; /* Abstand zwischen den Elementen */
+    animation: marquee 20s linear infinite; /* Endlos-Animation */
+    width: max-content; /* Nur so breit wie der Inhalt */
+}
+
+.marquee-item {
+    flex: 0 0 auto; /* Elemente bleiben fixiert */
+    width: 200px; /* Breite des Elements */
+    height: 250px; /* Höhe des Elements */
+    /* Hintergrundfarbe */
+    background: linear-gradient(135deg, rgba(244, 242, 240, 0.35) 0%, rgba(227, 222, 213, 0.35) 100%);
+    border: 1px solid #ccc; /* Rahmen */
+    border-radius: 12px; /* Abgerundete Ecken */
+    display: flex; /* Zentriert den Inhalt */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+}
+
+.menu-image {
+    width: 100%; /* Bild passt in das Element */
+    height: 150px; /* Höhe des Bilds */
+    object-fit: cover; /* Bild wird zugeschnitten */
+    border-radius: 8px; /* Bild leicht abgerundet */
+}
+
+@keyframes marquee {
+    from {
+        transform: translateX(0); /* Start rechts */
+    }
+    to {
+        transform: translateX(-50%); /* Ende links */
+    }
+}
+
+/* Stoppt die Animation beim Hover auf das Marquee */
+.marquee-container:hover .marquee-content {
+    animation-play-state: paused; /* Pausiert die Animation */
+}
+
+/* Vergrößert das Item beim Hover */
+.marquee-item:hover {
+    transform: scale(1.01); /* Vergrößert das Item um 10% */
+    transition: transform 0.2s ease; /* Animiert die Vergrößerung */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Fügt einen Schatten hinzu */
+}
+
+.marquee-borders {
+    mask-image: linear-gradient(
+            to right,
+            hsl(0 0% 0% / 0),
+            hsl(0 0% 0% / 1) 20%,
+            hsl(0 0% 0% / 1) 80%,
+            hsl(0 0% 0% / 0)
+    );
+}

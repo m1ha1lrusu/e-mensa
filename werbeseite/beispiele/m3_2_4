@@ -1,0 +1,7 @@
+USE emensawerbeseite;
+
+SELECT COUNT(*) AS anzahl_allergen FROM allergen;
+SELECT COUNT(*) AS anzahl_gericht FROM gericht;
+SELECT COUNT(*) AS anzahl_gericht_hat_allergen FROM gericht_hat_allergen;
+SELECT COUNT(*) AS anzahl_kategorie FROM kategorie;
+SELECT COUNT(*) AS anzahl_gericht_hat_kategorie FROM gericht_hat_kategorie;

@@ -1,0 +1,81 @@
+/* Newsletter Section */
+.newsletter {
+    background: var(--secondary-bg-color); /* Heller Hintergrund */
+    border-radius: 10px; /* Runde Ecken */
+    padding: 40px 20px; /* Innenabstand */
+    max-width: 600px; /* Maximale Breite */
+    margin: 40px auto; /* Zentriert */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Schatten */
+    text-align: center; /* Text zentrieren */
+}
+
+/* Section Heading */
+.newsletter h2 {
+    font-size: 2rem; /* Große Überschrift */
+    color: var(--primary); /* Primärfarbe */
+    margin-bottom: 40px; /* Abstand zum Formular */
+}
+
+/* Form Styling */
+.newsletter form {
+    display: flex;
+    flex-direction: column; /* Elemente untereinander */
+    gap: 20px; /* Abstand zwischen den Feldern */
+}
+
+/* Input Fields */
+.newsletter input[type="text"],
+.newsletter input[type="email"],
+.newsletter input[list],
+.newsletter input[type="checkbox"] {
+    width: 80%;
+    padding: 10px; /* Innenabstand */
+    border: 1px solid var(--text-secondary); /* Gedämpfte Rahmenfarbe */
+    border-radius: 5px; /* Abgerundete Ecken */
+    font-size: 1rem; /* Einheitliche Schriftgröße */
+    transition: border-color 0.3s ease; /* Sanfter Übergang */
+}
+
+/* Input Focus State */
+.newsletter input:focus {
+    border-color: var(--primary); /* Rahmenfarbe bei Fokus */
+    /*outline: none; /* Entfernt Standardfokus */
+    box-shadow: 0 0 5px var(--primary); /* Leichter Fokus-Schatten */
+}
+
+/* Label Styling */
+.newsletter label {
+    font-size: 1rem; /* Einheitliche Schriftgröße */
+    color: var(--text-primary); /* Textfarbe */
+}
+
+/* Submit Button */
+.newsletter-btn {
+    color: #fff; /* Text */
+    background: var(--text-primary);
+    padding: 0.75em 1.5em;
+    font-size: 1rem; /* Schriftgröße */
+    box-sizing: border-box;
+    border: 2px solid var(--text-primary);
+    border-radius: 0.75em;
+    cursor: pointer; /* Zeigt Hand-Symbol */
+    /*transition: background 0.3s ease, transform 0.2s ease; /* Sanfte Animationen */
+    transform: translateY(-0.2em);
+    transition: transform 0.1s ease;
+}
+
+/* Submit Button Hover */
+.newsletter-btn:hover {
+    transform: translateY(-0.33em); /* Leichte Anhebung */
+}
+
+.newsletter-btn:active {
+    transform: translateY(0);
+}
+
+/* Datenschutz Checkbox */
+.newsletter input[type="checkbox"] {
+    width: auto; /* Standardgröße */
+    margin-right: 10px; /* Abstand zum Label */
+}
+

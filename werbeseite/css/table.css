@@ -1,0 +1,83 @@
+
+.sorting-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.sorting-options {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#sort-dropdown {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    color: #333;
+    cursor: pointer;
+}
+
+#sort-dropdown:hover {
+    border-color: #007bff;
+    background-color: #e6f7ff;
+}
+
+/* Neue Gerichte (Session) */
+.reset-button {
+    text-align: right;
+}
+
+.reset-button .btn {
+    padding: 8px 12px;
+    background-color: #007BFF;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.reset-button .btn:hover {
+    background-color: #0056b3;
+}
+
+/* Tabelle */
+.table-container {
+    margin: 20px auto;
+    padding: 10px;
+    width: 80%; /* Tabellenbreite */
+    background: #ffffff; /* Weißer Hintergrund */
+    border: 1px solid #ccc; /* Rahmen */
+    border-radius: 8px; /* Abgerundete Ecken */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Schatten */
+}
+
+.menu-table {
+    width: 100%; /* Volle Breite */
+    border-collapse: collapse; /* Keine Lücken zwischen Zellen */
+    text-align: left; /* Text linksbündig */
+}
+
+.menu-table th, .menu-table td {
+    padding: 10px; /* Abstand innerhalb der Zellen */
+    border-bottom: 1px solid #ccc; /* Linie zwischen den Zeilen */
+    text-overflow: ellipsis; /* Zeigt "..." an, wenn Platz knapp ist */
+}
+
+.menu-table th {
+    background: #f5f5f5; /* Leicht grauer Hintergrund */
+    font-weight: bold; /* Fettgedruckt */
+}
+
+.menu-table td:nth-child(1) {
+    width: 40%; /* Die erste Spalte hat 40% der Breite */
+}
+
+.menu-table tbody tr:hover {
+    background: #f0f0f0; /* Hintergrundfarbe beim Hover */
+}

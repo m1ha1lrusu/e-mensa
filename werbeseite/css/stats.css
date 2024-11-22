@@ -1,0 +1,43 @@
+/* Stats Section */
+.stats {
+    display: flex; /* Items nebeneinander */
+    justify-content: center; /* Zentriert die Items */
+    gap: 50px; /* Abstand zwischen den Statistiken */
+    padding: 40px 20px; /* Innenabstand */
+    background-color: var(--secondary); /* Hintergrundfarbe */
+    border-radius: 10px; /* Abgerundete Ecken */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
+    text-align: center; /* Text in der Mitte */
+}
+
+/* Einzelne Statistiken */
+.stat {
+    background: var(--card-bg-color); /* Kartenfarbe */
+    color: var(--text-primary); /* Textfarbe */
+    padding: 20px 15px; /* Innenabstand */
+    border-radius: 8px; /* Runde Ecken */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Schatten */
+    flex: 1; /* Gleiche Breite für alle Statistiken */
+    max-width: 150px; /* Begrenzte Breite */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Animation beim Hover */
+}
+
+/* Hover-Effekt */
+.stat:hover {
+    transform: translateY(-10px); /* Hebt das Item leicht an */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Tieferer Schatten */
+}
+
+/* Zahlen in der Statistik */
+.stat h4 {
+    font-size: 2.5rem; /* Große Zahlen */
+    margin-bottom: 10px; /* Abstand zur Beschreibung */
+    color: var(--text-primary); /* Primärfarbe für Zahlen */
+}
+
+/* Beschreibung der Statistik */
+.stat p {
+    font-size: 1rem; /* Kleinere Beschreibung */
+    color: var(--text-secondary); /* Gedämpfte Farbe */
+    margin: 0; /* Kein Abstand */
+}

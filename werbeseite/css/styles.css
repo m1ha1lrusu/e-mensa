@@ -1,0 +1,36 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Inconsolata", sans-serif;
+    background-color: var(--background-light);
+    color: var(--text-primary);
+    overflow-x: hidden; /* Verhindert horizontales Scrollen */
+}
+
+.hero {
+    text-align: center;
+    padding: 2rem;
+}
+
+.menu-section .scroll-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.card {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    text-align: center;
+}
+
+
+.footer {
+    text-align: center;
+    padding: 1rem;
+}

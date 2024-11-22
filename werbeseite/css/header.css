@@ -1,0 +1,50 @@
+.navbar {
+    background-color: #ffffff; /* Hintergrundfarbe */
+    border-bottom: 1px solid #ccc; /* Trennlinie unten */
+    padding: 10px 20px;
+}
+
+.navbar-container {
+    display: flex; /* Flexbox für horizontale Anordnung */
+    align-items: center; /* Vertikal zentrieren */
+    justify-content: space-between; /* Platzierung der Inhalte */
+}
+
+.navbar-logo .logo {
+    width: 40px;
+    height: 40px;
+    display: block;
+}
+
+.navbar-links {
+    list-style: none; /* Entfernt Aufzählungspunkte */
+    display: flex; /* Horizontale Anordnung */
+    gap: 20px;
+    justify-content: center; /* Zentriert die Links */
+    flex-grow: 1; /* Erweitert, um in der Mitte zu bleiben */
+}
+
+.navbar-links li a {
+    text-decoration: none; /* Entfernt Unterstreichung */
+    color: #333;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.navbar-links li a:hover {
+    color: #007bff; /* Farbe beim Hover */
+}
+
+.navbar-contact .btn {
+    text-decoration: none; /* Entfernt Unterstreichung */
+    color: #fff;
+    background-color: #007bff;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.navbar-contact .btn:hover {
+    background-color: #0056b3;
+}

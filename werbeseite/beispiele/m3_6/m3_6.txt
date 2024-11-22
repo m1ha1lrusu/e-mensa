@@ -1,0 +1,53 @@
+1)
+SELECT g.name,
+       GROUP_CONCAT(DISTINCT a.code SEPARATOR ', ') AS allergene
+FROM gericht g
+       INNER JOIN gericht_hat_allergen gha on g.id = gha.gericht_id
+       INNER JOIN allergen a ON gha.code = a.code
+GROUP BY g.id;
+
+2)
+SELECT g.name,
+       GROUP_CONCAT(DISTINCT a.code SEPARATOR ', ') AS allergene
+FROM gericht g
+       LEFT JOIN gericht_hat_allergen gha on g.id = gha.gericht_id
+       LEFT JOIN allergen a ON gha.code = a.code
+GROUP BY g.id;
+
+3)
+SELECT a.code AS allergen_code,
+       a.name AS allergen_name,
+       GROUP_CONCAT(DISTINCT g.name SEPARATOR ', ') AS zugeordnete_gerichte
+FROM allergen a
+       LEFT JOIN gericht_hat_allergen gha ON a.code = gha.code
+       LEFT JOIN gericht g ON gha.gericht_id = g.id
+GROUP BY a.code;
+
+4)
+SELECT k.id AS kategorie_id,
+       k.name AS kategorie_name,
+       COUNT(ghk.gericht_id) AS anzahl_gerichte
+FROM kategorie k
+       LEFT JOIN gericht_hat_kategorie ghk ON k.id = ghk.kategorie_id
+GROUP BY k.id
+ORDER BY anzahl_gerichte ASC;
+
+5)
+SELECT k.id AS kategorie_id,
+       k.name AS kategorie_name,
+       COUNT(ghk.gericht_id) AS anzahl_gerichte
+FROM kategorie k
+       LEFT JOIN gericht_hat_kategorie ghk ON k.id = ghk.kategorie_id
+GROUP BY k.id
+HAVING COUNT(ghk.gericht_id) > 2
+ORDER BY anzahl_gerichte ASC;
+
+6)
+SELECT g.id AS gericht_id,
+       g.name AS gericht_name,
+       COUNT(gha.code) AS anzahl_allergene
+FROM gericht g
+       LEFT JOIN gericht_hat_allergen gha ON g.id = gha.gericht_id
+GROUP BY g.id
+HAVING COUNT(gha.code) >= 4
+ORDER BY anzahl_allergene DESC;

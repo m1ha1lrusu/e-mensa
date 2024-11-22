@@ -1,0 +1,27 @@
+:root {
+    /* Hintergrundfarben */
+    --background-light: rgb(236, 238, 240);
+    --background-dark: #1e1e1e;
+
+    /* Textfarben */
+    --text-primary: #333333;
+    --text-secondary: #555555;
+    --text-light: #ffffff;
+    --text-muted-color: #6c757d; /* Gedämpftes Grau */
+
+    /* Primärfarben */
+    --primary: #4caf50;
+    --primary-light: #81c784;
+    --primary-hover-color: #0056b3; /* Dunkleres Blau */
+
+    /* Sekundärfarben */
+    --secondary: rgb(124, 124, 125);
+    --secondary-light: #ffa48f;
+    --secondary-bg-color: #f8f9fa; /* Helles Grau */
+
+    /* Gradientfarben */
+    --gradient-start: #ff9a9e;
+    --gradient-end: #fad0c4;
+
+    --card-bg-color: #ffffff; /* Weiß für die Statistik-Karten */
+}
