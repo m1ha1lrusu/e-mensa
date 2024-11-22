@@ -194,6 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </nav>
 
 <header class="hero">
+    <img src="/werbeseite/img/koch.gif" alt="Animation" class="gif">
     <h1>Tagesmenü</h1>
     <h3>Was Sie heute erwartet</h3>
 </header>
@@ -225,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Tabelle mit allen Gerichten -->
     <div class="table-container" id="speisen">
-
+        <h3>Datenbank</h3>
         <div class="sorting-container">
             <div class="sorting-options">
                 <form method="GET" action="">

@@ -16,6 +16,21 @@ body {
     padding: 2rem;
 }
 
+.gif {
+    width: 200px;
+    height: auto;
+    padding-bottom: 20px;
+}
+
+h1 {
+    font-size: 70px;
+}
+
+h3 {
+    font-size: 30px;
+    padding-block: 15px;
+}
+
 .menu-section .scroll-container {
     display: flex;
     overflow-x: auto;
