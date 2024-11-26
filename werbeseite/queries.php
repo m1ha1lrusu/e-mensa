@@ -22,6 +22,7 @@ function getGerichte($link) {
 
 function getGerichteMitAllergenen($link): array
 {
+    // Quelle: https://www.php-kurs.com/session-anwenden.htm
     if (!isset($_SESSION['random_gerichte'])) {
         $sql = "
             SELECT
@@ -43,6 +44,20 @@ function getGerichteMitAllergenen($link): array
     return $_SESSION['random_gerichte'];
 }
 
+function sortGerichte($a, $b, $sort) {
+    switch ($sort) {
+        case 'name_asc':
+            return strcmp($a['name'], $b['name']);
+        case 'name_desc':
+            return strcmp($b['name'], $a['name']);
+        case 'preisintern_asc':
+            return $a['preisintern'] <=> $b['preisintern'];
+        case 'preisintern_desc':
+            return $b['preisintern'] <=> $a['preisintern'];
+        default:
+            return strcmp($a['name'], $b['name']);
+    }
+}
 
 function getGerichtByName($link, $name)
 {

@@ -27,34 +27,69 @@ $currentDate = date('Y-m-d');
 $userIP = $_SERVER['REMOTE_ADDR'];
 
 // Prüfen, ob die IP-Adresse bereits heute gespeichert wurde
-$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.besucher WHERE ip_address = ? AND visit_date = ?");
-$stmt->bind_param("ss", $userIP, $currentDate);
-$stmt->execute();
-$stmt->bind_result($visitExists);
-$stmt->fetch();
-$stmt->close();
+$sqlCheckIP = "SELECT COUNT(*) AS count FROM emensawerbeseite.besucher WHERE ip_address = ? AND visit_date = ?";
+$stmt = mysqli_stmt_init($link);
+mysqli_stmt_prepare($stmt, $sqlCheckIP);
+mysqli_stmt_bind_param($stmt, "ss", $userIP, $currentDate);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$row = mysqli_fetch_assoc($result);
+$visitExists = $row['count'];
+mysqli_stmt_close($stmt);
+
+//$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.besucher WHERE ip_address = ? AND visit_date = ?");
+//$stmt->bind_param("ss", $userIP, $currentDate);
+//$stmt->execute();
+//$stmt->bind_result($visitExists);
+//$stmt->fetch();
+//$stmt->close();
 
 // Wenn die IP noch nicht vorhanden ist, speichern
 if (!$visitExists) {
-    $stmt = $link->prepare("INSERT INTO emensawerbeseite.besucher (ip_address, visit_date) VALUES (?, ?)");
-    $stmt->bind_param("ss", $userIP, $currentDate);
-    $stmt->execute();
-    $stmt->close();
+    $sqlInsertIP = "INSERT INTO emensawerbeseite.besucher (ip_address, visit_date) VALUES (?, ?)";
+    $stmt = mysqli_stmt_init($link);
+    mysqli_stmt_prepare($stmt, $sqlInsertIP);
+    mysqli_stmt_bind_param($stmt, "ss", $userIP, $currentDate);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+
+//    $stmt = $link->prepare("INSERT INTO emensawerbeseite.besucher (ip_address, visit_date) VALUES (?, ?)");
+//    $stmt->bind_param("ss", $userIP, $currentDate);
+//    $stmt->execute();
+//    $stmt->close();
 }
 
-// Anzahl der Besucher
-$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.besucher");
-$stmt->execute();
-$stmt->bind_result($visitCount);
-$stmt->fetch();
-$stmt->close();
+// Anzahl Besucher
+$sqlVisitCount = "SELECT COUNT(*) AS count FROM emensawerbeseite.besucher";
+$stmt = mysqli_stmt_init($link);
+mysqli_stmt_prepare($stmt, $sqlVisitCount);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$row = mysqli_fetch_assoc($result);
+$visitCount = $row['count'];
+mysqli_stmt_close($stmt);
 
-// Newsletter-Anmeldungen zählen
-$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.newsletter_anmeldungen");
-$stmt->execute();
-$stmt->bind_result($newsletterCount);
-$stmt->fetch();
-$stmt->close();
+//$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.besucher");
+//$stmt->execute();
+//$stmt->bind_result($visitCount);
+//$stmt->fetch();
+//$stmt->close();
+
+// Anzahl Newsletter-Anmeldungen
+$sqlNewsletterCount = "SELECT COUNT(*) AS count FROM emensawerbeseite.newsletter_anmeldungen";
+$stmt = mysqli_stmt_init($link);
+mysqli_stmt_prepare($stmt, $sqlNewsletterCount);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$row = mysqli_fetch_assoc($result);
+$newsletterCount = $row['count'];
+mysqli_stmt_close($stmt);
+
+//$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.newsletter_anmeldungen");
+//$stmt->execute();
+//$stmt->bind_result($newsletterCount);
+//$stmt->fetch();
+//$stmt->close();
 
 // Gerichte laden und sortieren
 $gerichte = getGerichteMitAllergenen($link);
@@ -63,19 +98,10 @@ $mealCount = count($gerichte);
 /* Sortierung */
 $sort = $_GET['sort'] ?? 'name_asc';
 
+// Quele: https://www.php.net/manual/en/function.usort.php
+//        ChatBot: "usort-Funktion mit GET-Parameter"
 usort($gerichte, function ($a, $b) use ($sort) {
-    switch ($sort) {
-        case 'name_asc':
-            return strcmp($a['name'], $b['name']);
-        case 'name_desc':
-            return strcmp($b['name'], $a['name']);
-        case 'preisintern_asc':
-            return $a['preisintern'] <=> $b['preisintern'];
-        case 'preisintern_desc':
-            return $b['preisintern'] <=> $a['preisintern'];
-        default:
-            return strcmp($a['name'], $b['name']); // Standard: Name aufsteigend
-    }
+    return sortGerichte($a, $b, $sort);
 });
 
 if (isset($_GET['reset'])) {
@@ -84,7 +110,7 @@ if (isset($_GET['reset'])) {
     exit();
 }
 
-$message = ""; // Variable für Fehlermeldungen oder Erfolgsmeldungen
+$message = ""; // Variable für Fehler- oder Erfolgsmeldungen
 
 // Newsletter-Verarbeitung
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -109,16 +135,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Überprüfen, ob E-Mail bereits existiert
-    $stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.newsletter_anmeldungen WHERE email = ?");
-    if (!$stmt) {
-        die("Fehler beim Vorbereiten des Statements: " . $link->error);
-    }
+    $sqlCheckEmail = "SELECT COUNT(*) AS count FROM emensawerbeseite.newsletter_anmeldungen WHERE email = ?";
+    $stmt = mysqli_stmt_init($link);
+    mysqli_stmt_prepare($stmt, $sqlCheckEmail);
+    mysqli_stmt_bind_param($stmt, "s", $email);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    $emailExists = $row['count'];
+    mysqli_stmt_close($stmt);
 
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $stmt->bind_result($emailExists);
-    $stmt->fetch();
-    $stmt->close();
+//    $stmt->bind_param("s", $email);
+//    $stmt->execute();
+//    $stmt->bind_result($emailExists);
+//    $stmt->fetch();
+//    $stmt->close();
 
     if ($emailExists > 0) {
         $errors[] = 'Diese E-Mail-Adresse ist bereits registriert.';
@@ -128,20 +159,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($errors)) {
         $message = "<div class='error'><ul><li>" . implode('</li><li>', $errors) . "</li></ul></div>";
     } else {
-        $stmt = $link->prepare("INSERT INTO emensawerbeseite.newsletter_anmeldungen (name, email, datum) VALUES (?, ?, ?)");
-        if (!$stmt) {
-            die("Fehler beim Vorbereiten des Statements: " . $link->error);
-        }
-
+        $sqlInsertNewsletter = "INSERT INTO emensawerbeseite.newsletter_anmeldungen (name, email, datum) VALUES (?, ?, ?)";
+        $stmt = mysqli_stmt_init($link);
+        mysqli_stmt_prepare($stmt, $sqlInsertNewsletter);
         $datum = date('Y-m-d H:i:s');
-        $stmt->bind_param("sss", $name, $email, $datum);
+        mysqli_stmt_bind_param($stmt, "sss", $name, $email, $datum);
 
-        if ($stmt->execute()) {
+        if (mysqli_stmt_execute($stmt)) {
             $message = "<div class='success'>Danke für Ihre Anmeldung!</div>";
         } else {
-            $message = "<div class='error'>Fehler beim Speichern der Anmeldung: " . $stmt->error . "</div>";
+            $message = "<div class='error'>Fehler beim Speichern der Anmeldung: " . mysqli_stmt_error($stmt) . "</div>";
         }
-        $stmt->close();
+        mysqli_stmt_close($stmt);
+
+//        $stmt = $link->prepare("INSERT INTO emensawerbeseite.newsletter_anmeldungen (name, email, datum) VALUES (?, ?, ?)");
+//        if (!$stmt) {
+//            die("Fehler beim Vorbereiten des Statements: " . $link->error);
+//        }
+//
+//        $datum = date('Y-m-d H:i:s');
+//        $stmt->bind_param("sss", $name, $email, $datum);
+//
+//        if ($stmt->execute()) {
+//            $message = "<div class='success'>Danke für Ihre Anmeldung!</div>";
+//        } else {
+//            $message = "<div class='error'>Fehler beim Speichern der Anmeldung: " . $stmt->error . "</div>";
+//        }
+//        $stmt->close();
     }
 }
 
