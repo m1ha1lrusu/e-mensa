@@ -98,6 +98,8 @@ $mealCount = count($gerichte);
 /* Sortierung */
 $sort = $_GET['sort'] ?? 'name_asc';
 
+// besser Sortierung über SQL-Query laufen
+
 // Quele: https://www.php.net/manual/en/function.usort.php
 //        ChatBot: "usort-Funktion mit GET-Parameter"
 usort($gerichte, function ($a, $b) use ($sort) {
@@ -251,8 +253,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="marquee-item">
                     <img src="<?= htmlspecialchars(strtolower($gericht['image'])) ?>" alt="<?= htmlspecialchars($gericht['name']) ?>" class="menu-image">
                     <h4><?= htmlspecialchars($gericht['name']) ?></h4>
-                    <p>Preis intern: <?= htmlspecialchars($gericht['preisintern']) ?> €</p>
-                    <p>Preis extern: <?= htmlspecialchars($gericht['preisextern']) ?> €</p>
+                    <p style="font-size: 30px">
+                        <?= htmlspecialchars($gericht['preisintern']) ?> €
+                        <span style="font-size: 18px">/intern</span>
+                    </p>
+                    <p style="font-size: 30px">
+                        <?= htmlspecialchars($gericht['preisextern']) ?> €
+                        <span style="font-size: 18px">/extern</span>
+                    </p>
                 </div>
             <?php endforeach; ?>
 
@@ -261,8 +269,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="marquee-item">
                     <img src="<?= htmlspecialchars(strtolower($gericht['image'])) ?>" alt="<?= htmlspecialchars($gericht['name']) ?>" class="menu-image">
                     <h4><?= htmlspecialchars($gericht['name']) ?></h4>
-                    <p>Preis intern: <?= htmlspecialchars($gericht['preisintern']) ?> €</p>
-                    <p>Preis extern: <?= htmlspecialchars($gericht['preisextern']) ?> €</p>
+                    <p style="font-size: 30px">
+                        <?= htmlspecialchars($gericht['preisintern']) ?> €
+                        <span style="font-size: 18px">/intern</span>
+                    </p>
+                    <p style="font-size: 30px">
+                        <?= htmlspecialchars($gericht['preisextern']) ?> €
+                        <span style="font-size: 18px">/extern</span>
+                    </p>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -340,17 +354,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <section class="newsletter" id="newsletter">
         <h2>Abonnieren Sie unseren Newsletter</h2>
         <form method="post">
-            <p>
-                <label for="name"></label>
-                <input id="name" name="name" type="text" placeholder="Vorname" required>
+            <p class="input-group">
+                <input class="input" id="name" name="name" type="text" required>
+                <label class="label" for="name">Vorname</label>
             </p>
-            <p>
-                <label for="email"></label>
-                <input id="email" name="email" type="email" placeholder="E-Mail" required>
+            <p class="input-group">
+                <input class="input" id="email" name="email" type="email" required>
+                <label class="label" for="email">E-Mail</label>
             </p>
-            <p>
-                <label for="sprache"></label>
-                <input list="sprachen" id="sprache" name="sprache" placeholder="Sprache auswählen" required>
+            <p class="input-group">
+                <input class="input" list="sprachen" id="sprache" name="sprache" required>
+                <label class="label" for="sprache">Sprache</label>
                 <datalist id="sprachen">
                     <option value="Deutsch">Deutsch</option>
                     <option value="Englisch">Englisch</option>

@@ -32,6 +32,11 @@ h3 {
     padding-block: 15px;
 }
 
+h4 {
+    font-size: 20px;
+    padding: 10px;
+}
+
 .menu-section .scroll-container {
     display: flex;
     overflow-x: auto;
