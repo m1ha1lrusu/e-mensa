@@ -1,26 +1,76 @@
 <?php
+require 'db.php';
 
-function getGerichte($link) {
-    $sql = "SELECT name, preisintern, preisextern FROM emensawerbeseite.gericht ORDER BY name ASC LIMIT 5";
-
-    // Abfrage ausführen
-    $result = mysqli_query($link, $sql);
-
-    if (!$result) {
-        die("Fehler bei der Abfrage: " . mysqli_error($link));
+function executeQuery($link, $query, $params = [])
+{
+    $stmt = mysqli_prepare($link, $query);
+    if (!$stmt) {
+        return false;
     }
 
-    // Ergebnisse in ein Array speichern
-    $gerichte = [];
+    if (!empty($params)) {
+        $types = array_shift($params); // Erster Parameter ist der Typ-String
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+
+    if (!mysqli_stmt_execute($stmt)) {
+        return false;
+    }
+
+    $result = mysqli_stmt_get_result($stmt);
+    if ($result === false) {
+        return false; // Kein Ergebnis, z. B. bei INSERT
+    }
+
+    $data = [];
     while ($row = mysqli_fetch_assoc($result)) {
-        $gerichte[] = $row;
+        $data[] = $row;
     }
 
-    mysqli_free_result($result); // Ressourcen freigeben
-    return $gerichte;
+    return $data; // Array mit den Ergebnissen
 }
 
-function getGerichteMitAllergenen($link): array
+function checkUserIP($link, $ip, $date): bool
+{
+    $sql = "SELECT COUNT(*) AS count FROM emensawerbeseite.besucher WHERE ip_address = ? AND visit_date = ?";
+    $result = executeQuery($link, $sql, ['ss', $ip, $date]);
+
+    // Wenn kein Ergebnis zurückkommt, Standardwert 0
+    return isset($result[0]['count']) && $result[0]['count'] > 0;
+}
+
+
+// Fügt die IP-Adresse für das heutige Datum hinzu
+function insertUserIP($link, $ip, $date): bool
+{
+    $sql = "INSERT INTO emensawerbeseite.besucher (ip_address, visit_date) VALUES (?, ?)";
+    return executeQuery($link, $sql, ['ss', $ip, $date]);
+}
+
+// Holt die Anzahl der Besucher
+function getVisitCount($link): int
+{
+    $sql = "SELECT COUNT(*) AS count FROM emensawerbeseite.besucher";
+    $result = executeQuery($link, $sql);
+    return $result[0]['count'];
+}
+
+// Holt die Anzahl der Newsletter-Anmeldungen
+function getNewsletterCount($link): int
+{
+    $sql = "SELECT COUNT(*) AS count FROM emensawerbeseite.newsletter_anmeldungen";
+    $result = executeQuery($link, $sql);
+    return $result[0]['count'];
+}
+
+// Fügt eine Newsletter-Anmeldung hinzu
+function insertNewsletterSignup($link, $name, $email, $datum): bool
+{
+    $sql = "INSERT INTO emensawerbeseite.newsletter_anmeldungen (name, email, datum) VALUES (?, ?, ?)";
+    return executeQuery($link, $sql, ['sss', $name, $email, $datum]);
+}
+
+function getGerichte($link, $sort): array
 {
     // Quelle: https://www.php-kurs.com/session-anwenden.htm
     if (!isset($_SESSION['random_gerichte'])) {
@@ -37,56 +87,40 @@ function getGerichteMitAllergenen($link): array
             ORDER BY RAND()
             LIMIT 5;
         ";
+
         $result = mysqli_query($link, $sql);
         $_SESSION['random_gerichte'] = mysqli_fetch_all($result, MYSQLI_ASSOC); // Speichern in der Session
     }
 
+    // Sortierung anwenden, wenn Sortierkriterien vorliegen
+    if (isset($_GET['sort'])) {
+        $orderBy = 'name';
+        $orderDir = 'ASC';
+
+        switch ($sort) {
+            case 'name_desc':
+                $orderBy = 'name';
+                $orderDir = 'DESC';
+                break;
+            case 'preisintern_asc':
+                $orderBy = 'preisintern';
+                $orderDir = 'ASC';
+                break;
+            case 'preisintern_desc':
+                $orderBy = 'preisintern';
+                $orderDir = 'DESC';
+                break;
+        }
+
+        // Session-Daten mit Sortierung aktualisieren
+        usort($_SESSION['random_gerichte'], function ($a, $b) use ($orderBy, $orderDir) {
+            if ($orderDir === 'ASC') {
+                return $a[$orderBy] <=> $b[$orderBy];
+            } else {
+                return $b[$orderBy] <=> $a[$orderBy];
+            }
+        });
+    }
+
     return $_SESSION['random_gerichte'];
 }
-
-function sortGerichte($a, $b, $sort) {
-    switch ($sort) {
-        case 'name_asc':
-            return strcmp($a['name'], $b['name']);
-        case 'name_desc':
-            return strcmp($b['name'], $a['name']);
-        case 'preisintern_asc':
-            return $a['preisintern'] <=> $b['preisintern'];
-        case 'preisintern_desc':
-            return $b['preisintern'] <=> $a['preisintern'];
-        default:
-            return strcmp($a['name'], $b['name']);
-    }
-}
-
-function getGerichtByName($link, $name)
-{
-    $stmt = mysqli_prepare($link, "SELECT * FROM emensawerbeseite.gericht WHERE name = ?");
-    mysqli_stmt_bind_param($stmt, "s", $name);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-
-    $gericht = mysqli_fetch_assoc($result);
-
-    mysqli_stmt_close($stmt);
-    return $gericht;
-}
-
-function speichereNewsletterAnmeldung($link, $name, $email): void
-{
-    $stmt = $link->prepare("INSERT INTO emensawerbeseite.newsletter_anmeldungen (name, email, datum) VALUES (?, ?, ?)");
-    if (!$stmt) {
-        die("Fehler beim Vorbereiten des Statements: " . $link->error);
-    }
-
-    $datum = date('Y-m-d H:i:s');
-    $stmt->bind_param("sss", $name, $email, $datum);
-
-    if (!$stmt->execute()) {
-        die("Fehler beim Ausführen des Statements: " . $stmt->error);
-    }
-
-    $stmt->close();
-}
-
-

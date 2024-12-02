@@ -1,0 +1,14 @@
+CREATE TABLE ersteller (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) DEFAULT 'anonym',
+    email VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE wunschgericht (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    beschreibung TEXT NOT NULL,
+    erstellungsdatum DATE DEFAULT (CURDATE()),
+    ersteller_id INT,
+    FOREIGN KEY (ersteller_id) REFERENCES ersteller(id) ON DELETE CASCADE ON UPDATE CASCADE
+);

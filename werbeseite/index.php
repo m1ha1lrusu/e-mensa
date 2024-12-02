@@ -18,179 +18,85 @@ require 'gerichte.php';
 
 global $link, $gerichteMarquee;
 
-global $gerichte;
-global $visitCount;
-global $newsletterCount;
-global $mealCount;
+global $gerichte, $visitCount, $newsletterCount, $mealCount, $message;
 
 $currentDate = date('Y-m-d');
 $userIP = $_SERVER['REMOTE_ADDR'];
 
-// Prüfen, ob die IP-Adresse bereits heute gespeichert wurde
-$sqlCheckIP = "SELECT COUNT(*) AS count FROM emensawerbeseite.besucher WHERE ip_address = ? AND visit_date = ?";
-$stmt = mysqli_stmt_init($link);
-mysqli_stmt_prepare($stmt, $sqlCheckIP);
-mysqli_stmt_bind_param($stmt, "ss", $userIP, $currentDate);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$row = mysqli_fetch_assoc($result);
-$visitExists = $row['count'];
-mysqli_stmt_close($stmt);
+$currentDate = date('Y-m-d');
+$userIP = $_SERVER['REMOTE_ADDR'];
 
-//$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.besucher WHERE ip_address = ? AND visit_date = ?");
-//$stmt->bind_param("ss", $userIP, $currentDate);
-//$stmt->execute();
-//$stmt->bind_result($visitExists);
-//$stmt->fetch();
-//$stmt->close();
-
-// Wenn die IP noch nicht vorhanden ist, speichern
-if (!$visitExists) {
-    $sqlInsertIP = "INSERT INTO emensawerbeseite.besucher (ip_address, visit_date) VALUES (?, ?)";
-    $stmt = mysqli_stmt_init($link);
-    mysqli_stmt_prepare($stmt, $sqlInsertIP);
-    mysqli_stmt_bind_param($stmt, "ss", $userIP, $currentDate);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
-
-//    $stmt = $link->prepare("INSERT INTO emensawerbeseite.besucher (ip_address, visit_date) VALUES (?, ?)");
-//    $stmt->bind_param("ss", $userIP, $currentDate);
-//    $stmt->execute();
-//    $stmt->close();
+// 1. IP-Adresse prüfen und einfügen
+if (checkUserIP($link, $userIP, $currentDate) === 0) {
+    insertUserIP($link, $userIP, $currentDate);
 }
 
-// Anzahl Besucher
-$sqlVisitCount = "SELECT COUNT(*) AS count FROM emensawerbeseite.besucher";
-$stmt = mysqli_stmt_init($link);
-mysqli_stmt_prepare($stmt, $sqlVisitCount);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$row = mysqli_fetch_assoc($result);
-$visitCount = $row['count'];
-mysqli_stmt_close($stmt);
-
-//$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.besucher");
-//$stmt->execute();
-//$stmt->bind_result($visitCount);
-//$stmt->fetch();
-//$stmt->close();
-
-// Anzahl Newsletter-Anmeldungen
-$sqlNewsletterCount = "SELECT COUNT(*) AS count FROM emensawerbeseite.newsletter_anmeldungen";
-$stmt = mysqli_stmt_init($link);
-mysqli_stmt_prepare($stmt, $sqlNewsletterCount);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$row = mysqli_fetch_assoc($result);
-$newsletterCount = $row['count'];
-mysqli_stmt_close($stmt);
-
-//$stmt = $link->prepare("SELECT COUNT(*) FROM emensawerbeseite.newsletter_anmeldungen");
-//$stmt->execute();
-//$stmt->bind_result($newsletterCount);
-//$stmt->fetch();
-//$stmt->close();
-
-// Gerichte laden und sortieren
-$gerichte = getGerichteMitAllergenen($link);
-$mealCount = count($gerichte);
+// 2. Besucher- und Newsletter-Zahlen abrufen
+$visitCount = getVisitCount($link);
+$newsletterCount = getNewsletterCount($link);
 
 /* Sortierung */
 $sort = $_GET['sort'] ?? 'name_asc';
 
-// besser Sortierung über SQL-Query laufen
+// 3. Gerichte laden und sortieren
+$gerichte = getGerichte($link, $sort);
+$mealCount = count($gerichte);
 
-// Quele: https://www.php.net/manual/en/function.usort.php
-//        ChatBot: "usort-Funktion mit GET-Parameter"
-usort($gerichte, function ($a, $b) use ($sort) {
-    return sortGerichte($a, $b, $sort);
-});
-
-if (isset($_GET['reset'])) {
-    unset($_SESSION['random_gerichte']); // Lösche die gespeicherten Gerichte
-    header("Location: " . strtok($_SERVER['REQUEST_URI'], '?')); // Seite ohne GET-Parameter neu laden
-    exit();
-}
-
+// 4. Newsletter-Verarbeitung
 $message = ""; // Variable für Fehler- oder Erfolgsmeldungen
 
-// Newsletter-Verarbeitung
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $consent = isset($_POST['datenschutz']);
 
     $errors = [];
+    if (empty($name)) $errors[] = 'Der Name darf nicht leer sein.';
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Die E-Mail-Adresse ist nicht korrekt.';
+    if (!$consent) $errors[] = 'Sie müssen den Datenschutzbestimmungen zustimmen.';
 
-    // Validierung
-    if (empty($name)) {
-        $errors[] = 'Der Name darf nicht leer sein.';
-    }
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Die E-Mail-Adresse ist nicht korrekt formatiert.';
-    }
-    if (preg_match('/@wegwerfmail\.(de|com)$/i', $email) || preg_match('/@trashmail\./i', $email)) {
-        $errors[] = 'Wegwerf-E-Mail-Adressen sind nicht erlaubt.';
-    }
-    if (!$consent) {
-        $errors[] = 'Der Datenschutzbestimmung muss zugestimmt werden.';
-    }
+    // E-Mail prüfen, falls keine Fehler
+    if (empty($errors)) {
+        // Prüfen, ob die E-Mail bereits existiert
+        $result = executeQuery(
+            $link,
+            "SELECT COUNT(*) AS count FROM emensawerbeseite.newsletter_anmeldungen WHERE email = ?",
+            ['s', $email]
+        );
 
-    // Überprüfen, ob E-Mail bereits existiert
-    $sqlCheckEmail = "SELECT COUNT(*) AS count FROM emensawerbeseite.newsletter_anmeldungen WHERE email = ?";
-    $stmt = mysqli_stmt_init($link);
-    mysqli_stmt_prepare($stmt, $sqlCheckEmail);
-    mysqli_stmt_bind_param($stmt, "s", $email);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $row = mysqli_fetch_assoc($result);
-    $emailExists = $row['count'];
-    mysqli_stmt_close($stmt);
+        $emailExists = $result[0]['count'] ?? 0;
 
-//    $stmt->bind_param("s", $email);
-//    $stmt->execute();
-//    $stmt->bind_result($emailExists);
-//    $stmt->fetch();
-//    $stmt->close();
-
-    if ($emailExists > 0) {
-        $errors[] = 'Diese E-Mail-Adresse ist bereits registriert.';
+        if ($emailExists > 0) {
+            $errors[] = 'Diese E-Mail-Adresse ist bereits registriert.';
+        }
     }
 
-    // Fehlerfrei? In Datenbank einfügen
-    if (!empty($errors)) {
-        $message = "<div class='error'><ul><li>" . implode('</li><li>', $errors) . "</li></ul></div>";
-    } else {
-        $sqlInsertNewsletter = "INSERT INTO emensawerbeseite.newsletter_anmeldungen (name, email, datum) VALUES (?, ?, ?)";
-        $stmt = mysqli_stmt_init($link);
-        mysqli_stmt_prepare($stmt, $sqlInsertNewsletter);
+    // Nur wenn keine Fehler vorliegen, versuchen wir die Anmeldung zu speichern
+    if (empty($errors)) {
         $datum = date('Y-m-d H:i:s');
-        mysqli_stmt_bind_param($stmt, "sss", $name, $email, $datum);
+        $insertSuccess = executeQuery(
+            $link,
+            "INSERT INTO emensawerbeseite.newsletter_anmeldungen (name, email, datum) VALUES (?, ?, ?)",
+            ['sss', $name, $email, $datum]
+        );
 
-        if (mysqli_stmt_execute($stmt)) {
+        if ($insertSuccess !== false) {
             $message = "<div class='success'>Danke für Ihre Anmeldung!</div>";
         } else {
-            $message = "<div class='error'>Fehler beim Speichern der Anmeldung: " . mysqli_stmt_error($stmt) . "</div>";
+            $message = "<div class='error'>Fehler beim Speichern der Anmeldung.</div>";
         }
-        mysqli_stmt_close($stmt);
-
-//        $stmt = $link->prepare("INSERT INTO emensawerbeseite.newsletter_anmeldungen (name, email, datum) VALUES (?, ?, ?)");
-//        if (!$stmt) {
-//            die("Fehler beim Vorbereiten des Statements: " . $link->error);
-//        }
-//
-//        $datum = date('Y-m-d H:i:s');
-//        $stmt->bind_param("sss", $name, $email, $datum);
-//
-//        if ($stmt->execute()) {
-//            $message = "<div class='success'>Danke für Ihre Anmeldung!</div>";
-//        } else {
-//            $message = "<div class='error'>Fehler beim Speichern der Anmeldung: " . $stmt->error . "</div>";
-//        }
-//        $stmt->close();
+    } else {
+        // Fehler ausgeben
+        $message = "<div class='error'><ul><li>" . implode('</li><li>', $errors) . "</li></ul></div>";
     }
 }
 
+// Session-Reset für neue Gerichte
+if (isset($_GET['reset'])) {
+    unset($_SESSION['random_gerichte']);
+    header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
